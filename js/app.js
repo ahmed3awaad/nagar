@@ -1,4 +1,12 @@
 "use strict";
+/* If an old copy of the page is cached next to this newer script, reload once with fresh files. */
+(function () {
+  const need = ["customEditor", "hwList", "shareWa", "view3d", "types"];
+  if (need.some(id => !document.getElementById(id))) {
+    let tried = false; try { tried = sessionStorage.getItem("nagar-reload") === "1"; sessionStorage.setItem("nagar-reload", "1"); } catch (e) {}
+    if (!tried) { location.replace(location.pathname + "?r=" + Date.now() + location.hash); throw new Error("stale page, reloading"); }
+  } else { try { sessionStorage.removeItem("nagar-reload"); } catch (e) {} }
+})();
 /* نجّار — حاسبة الورشة
    All sizes are in cm. State lives in localStorage on the device. */
 
@@ -435,7 +443,7 @@ function renderTypes() {
   $("#newType").onclick = () => newCustom();
 }
 function newCustom(fromParts, fromHw, name) {
-  const t = { id: "c" + uid(), name: name || "شغلانة جديدة",
+  const t = { id: "c" + uid(), name: name || "شغلانتي " + AR(P.custom.length + 1),
     parts: fromParts || [{ name: "جنب", l: 100, w: 40, qty: 2, mat: "main", edge: "1" }, { name: "رف", l: 60, w: 38, qty: 2, mat: "main", edge: "1" }],
     hw: fromHw || [] };
   P.custom.push(t); P.type = t.id;
@@ -757,4 +765,9 @@ window.addEventListener("appinstalled", () => { $("#installBtn").hidden = true; 
 const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
 const standalone = window.matchMedia("(display-mode: standalone)").matches || navigator.standalone;
 if (isIOS && !standalone) $("#iosHint").hidden = false;
-if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch(() => {});
+if ("serviceWorker" in navigator && location.protocol === "https:") {
+  const hadController = !!navigator.serviceWorker.controller;
+  let reloaded = false;
+  navigator.serviceWorker.addEventListener("controllerchange", () => { if (hadController && !reloaded) { reloaded = true; location.reload(); } });
+  navigator.serviceWorker.register("sw.js").then(r => r.update()).catch(() => {});
+}
