@@ -1,5 +1,5 @@
 // نجّار — offline cache
-const CACHE = "nagar-v4";
+const CACHE = "nagar-v5";
 const SHELL = [
   "./", "./index.html", "./css/style.css", "./js/app.js", "./js/packer.js",
   "./manifest.webmanifest", "./icons/icon-192.png", "./icons/icon-512.png", "./icons/favicon.png",
@@ -16,7 +16,7 @@ self.addEventListener("activate", e => {
 self.addEventListener("fetch", e => {
   if (e.request.method !== "GET") return;
   e.respondWith(
-    fetch(e.request, new URL(e.request.url).origin === location.origin ? { cache: "no-cache" } : {}).then(res => {
+    (new URL(e.request.url).origin === location.origin ? fetch(e.request.url, { cache: "no-cache" }) : fetch(e.request)).then(res => {
       const copy = res.clone();
       if (res.ok || res.type === "opaque") caches.open(CACHE).then(c => c.put(e.request, copy));
       return res;
