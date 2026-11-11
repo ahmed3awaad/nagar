@@ -44,6 +44,7 @@ const DEF_HW = [
 
 const DEF_P = { type: "shoe", qty: 1,
   shoe: { H: 108, W: 100, D: 27, N: 3, h: 35, over: true, hw: "wesam" },
+  shoe2: { H: 100, W: 80, D: 35, doors: 2, shelves: 4, hw: "cup-full" },
   cab: { H: 180, W: 90, D: 50, doors: 2, shelves: 3, open: "side", hw: "cup-full" },
   drawers: { H: 75, W: 50, D: 45, N: 3, hw: "slide-ball" },
   shelf: { H: 180, W: 80, D: 30, shelves: 4 },
@@ -87,6 +88,7 @@ const ICON = {
 };
 const BUILTIN = [
   { id: "shoe", name: "جزامة قلابة", sub: "مفصلة قلابة" },
+  { id: "shoe2", name: "جزامة عادية", sub: "بضلف ورفوف" },
   { id: "cab", name: "دولاب بضلف", sub: "على جنب أو لفوق" },
   { id: "drawers", name: "وحدة أدراج", sub: "كومودينو / تسريحة" },
   { id: "shelf", name: "مكتبة رفوف", sub: "مفتوحة" },
@@ -99,6 +101,7 @@ const hwOpts = (cats) => hwOf(...cats).map(h => [h.id, h.name]);
 const FORMS = {
   shoe: () => [["hw", "نوع المفصلة", "", { select: hwOpts(["flip"]) }], ["H", "الارتفاع من جوه", "من الأرضية للسطح"], ["W", "العرض من جوه", "بين الجنبين"], ["D", "العمق", "عرض لوح الجنب"], ["N", "عدد الضلف", "", { int: 1 }], ["h", "ارتفاع الضلفة", ""]],
   cab: o => [["open", "الضلفة بتفتح", "", { select: [["side", "على جنب"], ["up", "لفوق (بيستون)"]] }], ["hw", "نوع المفصلة", "", { select: hwOpts(o.open === "up" ? ["cup"] : ["cup", "butt"]) }], ["H", "الارتفاع من بره", ""], ["W", "العرض من بره", ""], ["D", "العمق", "عرض لوح الجنب"], ...(o.open === "up" ? [] : [["doors", "عدد الضلف", "١ أو ٢", { int: 1 }]]), ["shelves", "عدد الرفوف", "", { int: 1 }]],
+  shoe2: () => [["hw", "نوع المفصلة", "", { select: hwOpts(["cup", "butt"]) }], ["H", "الارتفاع من بره", ""], ["W", "العرض من بره", ""], ["D", "العمق", "٣٠ لـ ٤٠ سم للجزم"], ["doors", "عدد الضلف", "١ أو ٢", { int: 1 }], ["shelves", "عدد الرفوف", "", { int: 1 }]],
   drawers: () => [["hw", "نوع المجرى", "", { select: hwOpts(["slide"]) }], ["H", "الارتفاع من بره", ""], ["W", "العرض من بره", ""], ["D", "العمق", "عرض لوح الجنب"], ["N", "عدد الأدراج", "", { int: 1 }]],
   shelf: () => [["H", "الارتفاع من بره", ""], ["W", "العرض من بره", ""], ["D", "العمق", ""], ["shelves", "عدد الرفوف", "", { int: 1 }]],
   free: () => []
@@ -265,6 +268,20 @@ function buildCab(o) {
   return { parts, status, drill: { title: "اخرم فين", svgs, marks, tip }, boxes, dots, hw: hwList, motion: true };
 }
 
+function buildShoe2(o) {
+  const R = buildCab({ ...o, open: "side" });
+  const T = S.T, H = num(o.H), W = num(o.W), D = num(o.D), ns = clampInt(o.shelves, 0, 10);
+  const space = (H - 2 * T - ns * T) / (ns + 1), perShelf = Math.floor((W - 2 * T) / 20), pairs = perShelf * (ns + 1);
+  const best = Math.max(0, Math.floor((H - 2 * T + T) / (16 + T)) - 1);
+  if (R.status[0] === "ok" || /الرفوف قريبة/.test(R.status[1])) {
+    if (D < 28) R.status = ["warn", `العمق ${fmt(D)} سم قليل، الجزمة الرجالي طولها حوالي ٣٠ سم. خليه ٣٠ على الأقل.`];
+    else if (space < 14) R.status = ["warn", `الرفوف قريبة أوي (${fmt(space)} سم) والجزم مش هتدخل. خليها ${AR(best)} رفوف.`];
+    else R.status = ["ok", `تمام. بين كل رف والتاني ${fmt(space)} سم، وهتشيل حوالي ${AR(pairs)} جوز جزم (${AR(perShelf)} في كل دور).`];
+  }
+  R.sug = 0;
+  return R;
+}
+
 function buildDrawers(o) {
   const T = S.T, H = num(o.H), W = num(o.W), D = num(o.D), N = clampInt(o.N, 1, 8);
   const hw = pickHw(o.hw, "slide");
@@ -336,6 +353,7 @@ function build() {
   const t = P.type;
   if (t === "shoe") return buildShoe(P.shoe);
   if (t === "cab") return buildCab(P.cab);
+  if (t === "shoe2") return buildShoe2(P.shoe2);
   if (t === "drawers") return buildDrawers(P.drawers);
   if (t === "shelf") return buildShelf(P.shelf);
   const c = P.custom.find(x => x.id === t);
@@ -410,7 +428,7 @@ function update() {
 }
 
 function renderTypes() {
-  const all = [...BUILTIN.map(t => ({ ...t, icon: ICON[t.id] })), ...P.custom.map(c => ({ id: c.id, name: c.name || "شغلانة", sub: "بتاعتك", icon: ICON.custom }))];
+  const all = [...BUILTIN.map(t => ({ ...t, icon: THUMBS[t.id] ? `<img src="${THUMBS[t.id]}" alt="" width="64" height="64">` : (ICON[t.id] || ICON.shoe) })), ...P.custom.map(c => ({ id: c.id, name: c.name || "شغلانة", sub: "بتاعتك", icon: ICON.custom }))];
   $("#types").innerHTML = all.map(t => `<button class="type" type="button" data-type="${esc(t.id)}" aria-pressed="${t.id === P.type}">${t.icon}<strong>${esc(t.name)}</strong><span>${esc(t.sub)}</span></button>`).join("")
     + `<button class="type add" type="button" id="newType">${ICON.add}<strong>شغلانة جديدة</strong><span>اعملها بنفسك</span></button>`;
   $$(".type[data-type]").forEach(b => b.onclick = () => { P.type = b.dataset.type; renderTypes(); renderForm(); update(); });
@@ -656,7 +674,7 @@ window.addEventListener("hashchange", showView);
 
 /* ================= 3D ================= */
 const view = $("#view3d"); let renderer, scene, camera, controls, group; const S3 = 0.01;
-const COL3 = { side: 0xece6dc, top: 0xe4dccd, flap: 0xd9cdb8, shelf: 0xeae3d7, back: 0xd5ccbd, extra: 0xe0e0c8 };
+const COL3 = { side: 0xefe9df, top: 0xe2d9c9, flap: 0xc9a273, shelf: 0xe7dccb, back: 0xcfc4b2, extra: 0xd8d8b8 };
 function init3D() {
   if (!window.THREE) { view.innerHTML = '<p class="hint" style="padding:12px;margin:0">الرسمة 3D مش قادرة تحمّل دلوقتي، بس الأرقام شغالة.</p>'; return; }
   renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
@@ -673,13 +691,10 @@ function mesh(w, h, d, color) {
   const m = new THREE.Mesh(new THREE.BoxGeometry(Math.max(w, .001), Math.max(h, .001), Math.max(d, .001)), new THREE.MeshStandardMaterial({ color, roughness: .8 }));
   m.add(new THREE.LineSegments(new THREE.EdgesGeometry(m.geometry), new THREE.LineBasicMaterial({ color: 0x8a7a66 }))); return m;
 }
-function build3D() {
-  if (!scene || !B) return;
-  if (group) { scene.remove(group); group.traverse(o => { o.geometry && o.geometry.dispose(); o.material && o.material.dispose(); }); }
-  group = new THREE.Group();
-  const op = num($("#open").value) / 100;
+function makeGroup(Bx, op) {
+  const grp = new THREE.Group();
   let maxX = 1, maxY = 1;
-  B.boxes.forEach(b => {
+  Bx.boxes.forEach(b => {
     const m = mesh(b.w * S3, b.h * S3, b.d * S3, COL3[b.kind] || 0xe0d8ca);
     maxX = Math.max(maxX, Math.abs(b.x) + b.w / 2); maxY = Math.max(maxY, b.y + b.h / 2);
     if (b.hinge) {
@@ -687,9 +702,16 @@ function build3D() {
       hg.position.set(hz.px * S3, hz.py * S3, hz.pz * S3);
       m.position.set((b.x - hz.px) * S3, (b.y - hz.py) * S3, (b.z - hz.pz) * S3); hg.add(m);
       const a = hz.sign * op * hz.max * Math.PI / 180; if (hz.axis === "x") hg.rotation.x = a; else hg.rotation.y = a;
-      group.add(hg);
-    } else { m.position.set(b.x * S3, b.y * S3, (b.z + (b.move ? b.move * op : 0)) * S3); group.add(m); }
+      grp.add(hg);
+    } else { m.position.set(b.x * S3, b.y * S3, (b.z + (b.move ? b.move * op : 0)) * S3); grp.add(m); }
   });
+  return { grp, maxX, maxY };
+}
+function build3D() {
+  if (!scene || !B) return;
+  if (group) { scene.remove(group); group.traverse(o => { o.geometry && o.geometry.dispose(); o.material && o.material.dispose(); }); }
+  const op = num($("#open").value) / 100;
+  const r = makeGroup(B, op); group = r.grp; const maxX = r.maxX, maxY = r.maxY;
   B.dots.forEach(d => { const s = new THREE.Mesh(new THREE.SphereGeometry(0.014, 14, 10), new THREE.MeshBasicMaterial({ color: 0xd23b2b })); s.position.set(d.x * S3, d.y * S3, d.z * S3); group.add(s); });
   scene.add(group);
   const H = maxY * S3, Wd = maxX * 2 * S3;
@@ -698,11 +720,34 @@ function build3D() {
   size();
 }
 $("#open").addEventListener("input", build3D);
+
+/* small 3D pictures for the project buttons, drawn once from each type's default sizes */
+const THUMBS = {};
+function makeThumbs() {
+  if (!window.THREE) return;
+  try {
+    const size = 160, r = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+    r.setPixelRatio(1); r.setSize(size, size, false);
+    const sc = new THREE.Scene(); sc.add(new THREE.HemisphereLight(0xffffff, 0x887766, 1)); const dl = new THREE.DirectionalLight(0xffffff, 0.75); dl.position.set(-1, 2, 2); sc.add(dl);
+    const cam = new THREE.PerspectiveCamera(30, 1, 0.01, 30);
+    const builders = { shoe: () => buildShoe(DEF_P.shoe), shoe2: () => buildShoe2(DEF_P.shoe2), cab: () => buildCab(DEF_P.cab), drawers: () => buildDrawers(DEF_P.drawers), shelf: () => buildShelf(DEF_P.shelf) };
+    const opens = { shoe: .7, shoe2: .5, cab: .45, drawers: .6, shelf: 0 };
+    for (const id in builders) {
+      const g = makeGroup(builders[id](), opens[id]);
+      sc.add(g.grp);
+      const H = g.maxY * S3, Wd = g.maxX * 2 * S3, mx = Math.max(Wd, H);
+      cam.position.set(-mx * 1.5, H * 1.05, mx * 2.6); cam.lookAt(0, H * 0.48, 0);
+      r.render(sc, cam); THUMBS[id] = r.domElement.toDataURL("image/png");
+      sc.remove(g.grp); g.grp.traverse(o => { o.geometry && o.geometry.dispose(); o.material && o.material.dispose(); });
+    }
+    r.dispose(); r.forceContextLoss && r.forceContextLoss();
+  } catch (e) {}
+}
 try { matchMedia("(prefers-color-scheme: dark)").addEventListener("change", update); } catch (e) {}
 
 /* ================= start ================= */
-if (!["shoe", "cab", "drawers", "shelf", "free"].includes(P.type) && !P.custom.find(c => c.id === P.type)) P.type = "shoe";
-init3D(); renderTypes(); renderForm(); renderHw(); showView(); update();
+if (!["shoe", "shoe2", "cab", "drawers", "shelf", "free"].includes(P.type) && !P.custom.find(c => c.id === P.type)) P.type = "shoe";
+init3D(); makeThumbs(); renderTypes(); renderForm(); renderHw(); showView(); update();
 
 /* ================= install as an app ================= */
 let deferredPrompt = null;
