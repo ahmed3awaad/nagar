@@ -1,0 +1,18 @@
+{
+  "name": "نجّار — حاسبة الورشة",
+  "short_name": "نجّار",
+  "description": "أماكن الخرم، رسمة 3D، تقطيع الألواح، والتكلفة.",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "./#plan",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#eceff2",
+  "theme_color": "#f2b705",
+  "icons": [
+    {"src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png"},
+    {"src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png"},
+    {"src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+  ]
+}

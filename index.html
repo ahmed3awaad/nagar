@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>نجّار — حاسبة الورشة</title>
+<meta name="description" content="حاسبة النجارة: أماكن الخرم، رسمة 3D، خطة تقطيع الألواح، والتكلفة وسعر البيع.">
+<meta name="theme-color" content="#f2b705">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/favicon.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="نجّار">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@400;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="brand">
+  <div class="tape" aria-hidden="true"></div>
+  <div class="brand-in">
+    <img src="icons/icon-192.png" alt="" width="40" height="40" class="logo">
+    <div class="brand-txt">
+      <strong>نجّار</strong>
+      <span id="viewName">الشغلانة</span>
+    </div>
+    <button class="install" id="installBtn" type="button" hidden>نزّل الأبلكيشن</button>
+  </div>
+</header>
+
+<main>
+  <!-- ===== الشغلانة ===== -->
+  <section class="view" id="v-plan">
+    <div class="card">
+      <div class="step"><b>١</b><h2>هتعمل إيه؟</h2></div>
+      <div class="types" id="types"></div>
+    </div>
+
+    <div class="card">
+      <div class="step"><b>٢</b><h2>المقاسات</h2><span class="note">كله بالسنتي</span></div>
+      <div class="form" id="form"></div>
+      <div id="formExtra"></div>
+      <div id="status" class="status" role="status"></div>
+    </div>
+
+    <div class="card" id="drillCard">
+      <div class="step"><b>٣</b><h2 id="drillTitle">اخرم فين</h2></div>
+      <div class="draw">
+        <div class="svgbox" id="svgs"></div>
+        <div class="draw-side"><ol class="marks" id="marks"></ol><p class="tip" id="tip"></p></div>
+      </div>
+    </div>
+
+    <div class="card" id="card3d">
+      <div class="step"><b>٤</b><h2>شكلها هيبقى كده</h2></div>
+      <div id="view3d"></div>
+      <div class="row" id="openRow"><label for="open">افتح</label><input type="range" id="open" min="0" max="100" value="45"></div>
+      <p class="hint">لف الرسمة بصباعك. النقط الحمرا أماكن الخرم.</p>
+    </div>
+
+    <div class="card">
+      <div class="step"><b>٥</b><h2>هتحتاج إيه</h2></div>
+      <div class="chips" id="planChips"></div>
+      <div class="tablewrap"><table id="partsTable"></table></div>
+      <a class="link" href="#cut">شوف رسمة التقطيع ←</a>
+    </div>
+  </section>
+
+  <!-- ===== التقطيع ===== -->
+  <section class="view" id="v-cut" hidden>
+    <div class="card">
+      <div class="step"><h2>مقاس اللوح</h2></div>
+      <div class="presets" id="presets"></div>
+      <div class="form">
+        <div class="f"><label for="s-sheetL">طول اللوح</label><input id="s-sheetL" type="number" inputmode="decimal" step="0.1"></div>
+        <div class="f"><label for="s-sheetW">عرض اللوح</label><input id="s-sheetW" type="number" inputmode="decimal" step="0.1"></div>
+        <div class="f"><label for="s-kerf">سلاح المنشار</label><small>اللي بيروح في كل قطع</small><input id="s-kerf" type="number" inputmode="decimal" step="0.1"></div>
+        <div class="f"><label for="cutQty">هتعمل كام واحدة</label><small>من نفس الشغلانة</small><input id="cutQty" type="number" inputmode="numeric" min="1" max="50" step="1"></div>
+      </div>
+      <label class="check"><input type="checkbox" id="s-grain"> القشرة ليها اتجاه، متلفّش القطع</label>
+    </div>
+
+    <div class="card">
+      <div class="chips" id="cutChips"></div>
+      <p id="cutErr" class="err" hidden></p>
+      <p class="hint">قيس كل قطعة من الحرف اللي لسه مقطوع، مش من أول اللوح. المتقطّع هو الباقي اللي ينفعك.</p>
+    </div>
+
+    <div id="sheets" class="view"></div>
+
+    <div class="card">
+      <div class="step"><h2>قطع زيادة</h2></div>
+      <p class="hint flush">ضيف أي قطعة تانية من نفس الألواح، زي رف أو كرسي.</p>
+      <div class="extra" id="extra"></div>
+      <div class="row"><button id="addExtra" type="button" class="btn">+ ضيف قطعة</button></div>
+    </div>
+  </section>
+
+  <!-- ===== الحساب ===== -->
+  <section class="view" id="v-price" hidden>
+    <div class="card">
+      <div class="step"><h2>الأسعار</h2><span class="note">بالجنيه، وبتتحفظ على موبايلك</span></div>
+      <div class="form" id="priceForm"></div>
+      <label class="check"><input type="checkbox" id="s-fullSheets"> احسب اللوح كامل حتى لو فضل منه حتة</label>
+    </div>
+    <div class="card">
+      <div class="step"><h2 id="priceTitle">الحساب</h2></div>
+      <div class="big-price" id="priceBig"></div>
+      <div class="tablewrap"><table id="priceTable"></table></div>
+      <p class="hint" id="priceHint"></p>
+    </div>
+  </section>
+
+  <!-- ===== المقاسات ===== -->
+  <section class="view" id="v-setup" hidden>
+    <div class="card">
+      <div class="step"><h2>الخشب</h2></div>
+      <div class="form" id="setupWood"></div>
+    </div>
+    <div class="card">
+      <div class="step"><h2>مفصلة وسام القلابة</h2></div>
+      <p class="hint flush">بتقيسها مرة واحدة، والحاسبة بتستخدمها في كل جزامة.</p>
+      <div class="form" id="setupFlip"></div>
+    </div>
+    <div class="card">
+      <div class="step"><h2>المفصلة السوستة</h2></div>
+      <div class="form" id="setupCup"></div>
+    </div>
+    <div class="row"><button id="resetSetup" type="button" class="btn">رجّع المقاسات الأصلية</button><span class="hint flush" id="resetMsg"></span></div>
+    <p class="hint" id="iosHint" hidden>عشان تنزّله على الآيفون: دوس على زرار المشاركة في سفاري، وبعدين «إضافة إلى الشاشة الرئيسية».</p>
+  </section>
+</main>
+
+<nav class="tabbar" aria-label="الصفحات">
+  <a href="#plan" data-view="plan"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="1.5"/><path d="M5 9h14M5 15h14"/></svg><span>الشغلانة</span></a>
+  <a href="#cut" data-view="cut"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="1.5"/><path d="M11 5v14M11 12h10" stroke-dasharray="2.5 2"/></svg><span>التقطيع</span></a>
+  <a href="#price" data-view="price"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/></svg><span>الحساب</span></a>
+  <a href="#setup" data-view="setup"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h5v16H4z"/><path d="M9 7h2M9 10h3M9 13h2M9 16h3"/><path d="M15 4l5 5-9 9" /></svg><span>المقاسات</span></a>
+</nav>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script src="js/packer.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
