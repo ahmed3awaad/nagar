@@ -42,6 +42,7 @@
     <div class="card">
       <div class="step"><b>٢</b><h2>المقاسات</h2><span class="note">كله بالسنتي</span></div>
       <div class="form" id="form"></div>
+      <div id="customEditor" hidden></div>
       <div id="formExtra"></div>
       <div id="status" class="status" role="status"></div>
     </div>
@@ -89,6 +90,19 @@
       <p class="hint">قيس كل قطعة من الحرف اللي لسه مقطوع، مش من أول اللوح. المتقطّع هو الباقي اللي ينفعك.</p>
     </div>
 
+    <div class="card share">
+      <div class="step"><h2>ابعت القايمة لمحل التقطيع</h2></div>
+      <div class="row">
+        <a class="btn wa" id="shareWa" href="#" target="_blank" rel="noopener">واتساب</a>
+        <button type="button" class="btn" id="shareNative" hidden>شارك</button>
+        <button type="button" class="btn" id="copyList">انسخ القايمة</button>
+        <button type="button" class="btn" id="printPlan">اطبع</button>
+        <span class="hint flush" id="shareMsg" role="status"></span>
+      </div>
+      <label for="shareText" class="sr">قايمة التقطيع</label>
+      <textarea id="shareText" rows="8" hidden readonly></textarea>
+    </div>
+
     <div id="sheets" class="view"></div>
 
     <div class="card">
@@ -114,22 +128,15 @@
     </div>
   </section>
 
-  <!-- ===== المقاسات ===== -->
-  <section class="view" id="v-setup" hidden>
+  <!-- ===== المفصلات والخشب ===== -->
+  <section class="view" id="v-hw" hidden>
     <div class="card">
       <div class="step"><h2>الخشب</h2></div>
       <div class="form" id="setupWood"></div>
     </div>
-    <div class="card">
-      <div class="step"><h2>مفصلة وسام القلابة</h2></div>
-      <p class="hint flush">بتقيسها مرة واحدة، والحاسبة بتستخدمها في كل جزامة.</p>
-      <div class="form" id="setupFlip"></div>
-    </div>
-    <div class="card">
-      <div class="step"><h2>المفصلة السوستة</h2></div>
-      <div class="form" id="setupCup"></div>
-    </div>
-    <div class="row"><button id="resetSetup" type="button" class="btn">رجّع المقاسات الأصلية</button><span class="hint flush" id="resetMsg"></span></div>
+    <p class="hint flush">دي كل أنواع المفصلات والمجاري اللي بتشتغل بيها. عدّل المقاسات على اللي عندك، واكتب السعر، وضيف أي نوع جديد. كله بيتحفظ على موبايلك.</p>
+    <div id="hwList" class="view"></div>
+    <div class="row"><button id="resetHw" type="button" class="btn">رجّع الأنواع الأصلية</button><span class="hint flush" id="resetMsg"></span></div>
     <p class="hint" id="iosHint" hidden>عشان تنزّله على الآيفون: دوس على زرار المشاركة في سفاري، وبعدين «إضافة إلى الشاشة الرئيسية».</p>
   </section>
 </main>
@@ -138,7 +145,7 @@
   <a href="#plan" data-view="plan"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="1.5"/><path d="M5 9h14M5 15h14"/></svg><span>الشغلانة</span></a>
   <a href="#cut" data-view="cut"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="1.5"/><path d="M11 5v14M11 12h10" stroke-dasharray="2.5 2"/></svg><span>التقطيع</span></a>
   <a href="#price" data-view="price"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/></svg><span>الحساب</span></a>
-  <a href="#setup" data-view="setup"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h5v16H4z"/><path d="M9 7h2M9 10h3M9 13h2M9 16h3"/><path d="M15 4l5 5-9 9" /></svg><span>المقاسات</span></a>
+  <a href="#hw" data-view="hw"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="7" height="16" rx="1"/><circle cx="7.5" cy="8" r="1.3"/><circle cx="7.5" cy="16" r="1.3"/><path d="M11 12h4a5 5 0 0 0 5-5"/></svg><span>المفصلات</span></a>
 </nav>
 
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>

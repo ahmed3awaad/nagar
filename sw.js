@@ -1,5 +1,5 @@
 // نجّار — offline cache
-const CACHE = "nagar-v1";
+const CACHE = "nagar-v2";
 const SHELL = [
   "./", "./index.html", "./css/style.css", "./js/app.js", "./js/packer.js",
   "./manifest.webmanifest", "./icons/icon-192.png", "./icons/icon-512.png", "./icons/favicon.png",
